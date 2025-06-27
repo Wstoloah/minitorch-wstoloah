@@ -1,11 +1,14 @@
 import networkx as nx
-
+from dataclasses import dataclass
 import minitorch
 
 if hasattr(minitorch, "Scalar"):
-    Scalar = minitorch.Scalar
+    Scalar = minitorch.Scalar  # type: ignore
 else:
-    Scalar = None
+
+    @dataclass
+    class Scalar:
+        name: str
 
 
 def build_expression(code):
@@ -22,7 +25,6 @@ def build_expression(code):
 
 
 def build_tensor_expression(code):
-
     variables = {
         "x": minitorch.tensor([[1.0, 2.0, 3.0]], requires_grad=True),
         "y": minitorch.tensor([[1.0, 2.0, 3.0]], requires_grad=True),
