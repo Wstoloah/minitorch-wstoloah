@@ -10,3 +10,8 @@ from .optim import *  # noqa: F401,F403
 from .scalar import *  # noqa: F401,F403
 from .scalar_functions import *  # noqa: F401,F403
 from .testing import *  # noqa: F401,F403
+
+from .tensor_data import *  # noqa: F401,F403
+from .tensor import *  # noqa: F401,F403
+from .tensor_ops import *  # noqa: F401,F403
+from .tensor_functions import *  # noqa: F401,F403
