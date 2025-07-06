@@ -94,9 +94,13 @@ def broadcast_index(
     dim_diff = len(big_shape) - len(shape)
     for i in range(len(shape)):
         if shape[i] == 1:
-            out_index[i] = 0
+            out_index[i] = (
+                0  #  broadcasted dimensions (with size 1) don’t vary. The value at index 0 is repeated for all positions in that dimension.
+            )
         else:
-            out_index[i] = big_index[i + dim_diff]
+            out_index[i] = big_index[
+                i + dim_diff
+            ]  # The first dim_diff dimensions of big_shape are extra compared to shape => ignore that dimension for the smaller tensor by offsetting the index by dim_diff.
 
 
 def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
@@ -153,11 +157,14 @@ def strides_from_shape(shape: UserShape) -> UserStrides:
         The computed strides corresponding to the shape.
 
     """
-    layout = [1]
+    layout = [
+        1
+    ]  # last dimension stride is always 1 (moving one step in last dimension moves 1 element)
     offset = 1
     for s in reversed(shape):
         layout.append(s * offset)
         offset = s * offset
+    # last stride removed: corresponds to moving beyond the entire tensor
     return tuple(reversed(layout[:-1]))
 
 
@@ -210,7 +217,7 @@ class TensorData:
 
         """
         last = 1e9
-        for stride in self._strides:
+        for stride in self._strides:  # strides should decrease or stay the same as you go from outer to inner dimensions
             if stride > last:
                 return False
             last = stride
