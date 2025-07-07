@@ -111,7 +111,8 @@ def backpropagate(variable: Variable, deriv: Any) -> None:
             var.accumulate_derivative(d_output)
         else:
             for parent, d_input in var.chain_rule(d_output):
-                derivatives[parent.unique_id] += d_input
+                if parent.unique_id in derivatives:
+                    derivatives[parent.unique_id] += d_input
 
 
 @dataclass
