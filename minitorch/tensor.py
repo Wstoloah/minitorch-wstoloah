@@ -339,13 +339,40 @@ class Tensor:
 
         def zero(shape: UserShape) -> Tensor:
             return Tensor.make(
-                [0.0] * int(operators.prod(shape)), shape, backend=self.backend
+                np.zeros(int(operators.prod(shape)), dtype=np.float64),
+                shape,
+                backend=self.backend,
             )
 
         if shape is None:
             out = zero(self.shape)
         else:
             out = zero(shape)
+        out._type_(self.backend)
+        return out
+
+    def ones(self, shape: Optional[UserShape] = None) -> Tensor:
+        """Creates a tensor of ones with the given shape.
+
+        Args:
+        ----
+            shape (Optional[UserShape]): Desired shape of the tensor.
+
+        Returns:
+        -------
+            Tensor: A tensor filled with zeros.
+
+        """
+
+        def one(shape: UserShape) -> Tensor:
+            return Tensor.make(
+                [1.0] * int(operators.prod(shape)), shape, backend=self.backend
+            )
+
+        if shape is None:
+            out = one(self.shape)
+        else:
+            out = one(shape)
         out._type_(self.backend)
         return out
 
