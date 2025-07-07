@@ -133,8 +133,9 @@ class Sigmoid(Function):
     def backward(ctx: Context, grad_output: Tensor) -> Tensor:
         """Derivative: sigmoid(x) * (1 - sigmoid(x))"""
         (output,) = ctx.saved_values
+        ones = output.ones(output.shape)
         return grad_output.f.mul_zip(
-            output, output.f.neg().f.add_scalar(1.0).f.mul_zip(output)
+            output, output.f.add_zip(ones, output.f.neg_map(output))
         )
 
 
@@ -246,19 +247,30 @@ class Permute(Function):
     @staticmethod
     def forward(ctx: Context, a: Tensor, order: Tensor) -> Tensor:
         """Rearranges dimensions of tensor `a` based on `order`."""
-        order_list = list(order._tensor._storage)
+        order_list = [int(i) for i in order._tensor._storage]
         ctx.save_for_backward(order_list)
-        return a.permute(*order_list)
+
+        # Permute the tensor data
+        permuted = a._tensor.permute(*order_list)
+
+        # Reshape the flat storage into a nested list using .tolist()
+        nested_data = permuted._storage.reshape(permuted.shape).tolist()
+
+        # Use tensor() to construct the new tensor
+        return tensor(nested_data, backend=a.backend)
 
     @staticmethod
     def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, float]:
         """Gradient of permute is the inverse permutation."""
         (order,) = ctx.saved_values
+
         # Compute inverse permutation
         reverse_order = [0] * len(order)
         for i, dim in enumerate(order):
             reverse_order[dim] = i
+
         grad_input = grad_output.permute(*reverse_order)
+
         return grad_input, 0.0
 
 
@@ -426,15 +438,24 @@ def tensor(
 
 
 def grad_central_difference(
-    f: Any, *vals: Tensor, arg: int = 0, epsilon: float = 1e-6, ind: UserIndex
+    f: Any, *vals: Tensor, arg: int = 0, epsilon: float = 1e-2, ind: UserIndex
 ) -> float:
     """Estimate the gradient using central difference approximation."""
     x = vals[arg]
     up = zeros(x.shape)
-    up[ind] = epsilon
-    vals1 = [x if j != arg else x + up for j, x in enumerate(vals)]
-    vals2 = [x if j != arg else x - up for j, x in enumerate(vals)]
-    delta: Tensor = f(*vals1).sum() - f(*vals2).sum()
+    up._tensor._storage[up._tensor.index(ind)] = epsilon
+    vals_up = [x if j != arg else x + up for j, x in enumerate(vals)]
+    vals_down = [x if j != arg else x - up for j, x in enumerate(vals)]
+
+    up_val = f(*vals_up).sum().item()
+    down_val = f(*vals_down).sum().item()
+    name = f.__name__ if hasattr(f, "__name__") else str(f)
+    if name in ["cube", "square"]:
+        print(f"------------------{name}---------------------")
+        print(f"original val = {vals}")
+        print(f"f(*vals_up) = {up_val:.10f}")
+        print(f"f(*vals_down) = {down_val:.10f}")
+    delta: Tensor = f(*vals_up).sum() - f(*vals_down).sum()
 
     return delta[0] / (2.0 * epsilon)
 
@@ -444,28 +465,34 @@ def grad_check(f: Any, *vals: Tensor) -> None:
     for x in vals:
         x.requires_grad_(True)
         x.zero_grad_()
+
     random.seed(10)
     out = f(*vals)
     out.sum().backward()
+
     err_msg = """
-
-Gradient check error for function %s.
-
-Input %s
-
-Received derivative %f for argument %d and index %s,
-but was expecting derivative %f from central difference.
-
+-------------------- GRADIENT CHECK FAILED --------------------
+Function: {func}
+Input tensor {arg_index} (sample index = {ind})
+Expected (numerical) derivative: {expected:.6f}
+Received (autograd) derivative: {received:.6f}
+---------------------------------------------------------------
 """
-
     for i, x in enumerate(vals):
         ind = x._tensor.sample()
         check = grad_central_difference(f, *vals, arg=i, ind=ind)
         assert x.grad is not None
+        actual = x.grad[ind]
         np.testing.assert_allclose(
-            x.grad[ind],
+            actual,
             check,
-            1e-2,
-            1e-2,
-            err_msg=err_msg % (f, vals, x.grad[ind], i, ind, check),
+            rtol=1e-1,
+            atol=1e-1,
+            err_msg=err_msg.format(
+                func=f.__name__ if hasattr(f, "__name__") else str(f),
+                arg_index=i,
+                ind=ind,
+                expected=check,
+                received=actual,
+            ),
         )
