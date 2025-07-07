@@ -69,7 +69,11 @@ class TensorOps:
             to the first tensor and writes results into the second tensor.
 
         """
-        raise NotImplementedError("cmap() is not implemented yet")
+
+        def _unimplemented(a: Tensor, out: Tensor) -> Tensor:
+            raise NotImplementedError("cmap is not yet implemented.")
+
+        return _unimplemented
 
     @staticmethod
     def zip(fn: Callable[[float, float], float]) -> Callable[[Tensor, Tensor], Tensor]:
@@ -85,7 +89,11 @@ class TensorOps:
             to two input tensors, returning a new tensor with the results.
 
         """
-        raise NotImplementedError("zip() is not implemented yet")
+
+        def _unimplemented(a: Tensor, out: Tensor) -> Tensor:
+            raise NotImplementedError("zip is not yet implemented.")
+
+        return _unimplemented
 
     @staticmethod
     def reduce(
@@ -104,7 +112,11 @@ class TensorOps:
             and returns a tensor reduced along that dimension using `fn`.
 
         """
-        raise NotImplementedError("reduce() is not implemented yet")
+
+        def _unimplemented(a: Tensor, b: int) -> Tensor:
+            raise NotImplementedError("reduce is not yet implemented.")
+
+        return _unimplemented
 
     @staticmethod
     def matrix_multiply(a: Tensor, b: Tensor) -> Tensor:
@@ -435,7 +447,7 @@ def tensor_zip(fn: Callable[[float, float], float]) -> Any:
     ) -> None:
         out_index = np.array([0] * len(out_shape))
         a_index = np.array([0] * len(a_shape))
-        b_index = np.array([0] * len(a_shape))
+        b_index = np.array([0] * len(b_shape))
 
         for i in range(len(out)):
             to_index(i, out_shape, out_index)  # Get the multi-dim index for out
