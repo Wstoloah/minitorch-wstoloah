@@ -459,11 +459,43 @@ def _tensor_matrix_multiply(
         None : Fills in `out`
 
     """
-    # a_batch_stride = a_strides[0] if a_shape[0] > 1 else 0
-    # b_batch_stride = b_strides[0] if b_shape[0] > 1 else 0
+    # Ensure inner dimensions align for matrix multiplication
+    assert a_shape[-1] == b_shape[-2]
 
-    # TODO: Implement for Task 3.2.
-    raise NotImplementedError("Need to implement for Task 3.2")
+    # Extract dimensions
+    batch = out_shape[0]  # After reshaping, tensors are always 3D
+    out_i = out_shape[1]
+    out_j = out_shape[2]
+    inner_dim = a_shape[2]  # Shared dimension for dot product
+
+    # Parallelize over batch dimension
+    for n in prange(batch):
+        for i in range(out_i):
+            for j in range(out_j):
+                acc = 0.0
+                for k in range(inner_dim):
+                    # Handle broadcasting: if shape is 1 in batch, reuse 0-th index
+                    a_n = n if a_shape[0] > 1 else 0
+                    b_n = n if b_shape[0] > 1 else 0
+
+                    # Compute flat index into a[n, i, k]
+                    a_pos = int(
+                        a_n * a_strides[0] + i * a_strides[1] + k * a_strides[2]
+                    )
+
+                    # Compute flat index into b[n, k, j]
+                    b_pos = int(
+                        b_n * b_strides[0] + k * b_strides[1] + j * b_strides[2]
+                    )
+
+                    acc += a_storage[a_pos] * b_storage[b_pos]
+
+                # Compute flat index into out[n, i, j]
+                out_pos = int(
+                    n * out_strides[0] + i * out_strides[1] + j * out_strides[2]
+                )
+
+                out[out_pos] = acc
 
 
 tensor_matrix_multiply = njit(_tensor_matrix_multiply, parallel=True)
