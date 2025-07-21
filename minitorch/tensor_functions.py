@@ -118,16 +118,18 @@ class Mul(Function):
         Gradient is grad_output * other_tensor
         """
         a, b = ctx.saved_values
-        return a.f.mul_zip(grad_output, b), b.f.mul_zip(grad_output, a)
+        return grad_output.f.mul_zip(b, grad_output), grad_output.f.mul_zip(
+            a, grad_output
+        )
 
 
 class Sigmoid(Function):
     @staticmethod
     def forward(ctx: Context, t1: Tensor) -> Tensor:
         """Applies the sigmoid function element-wise: 1 / (1 + exp(-x))"""
-        output = t1.f.sigmoid_map(t1)
-        ctx.save_for_backward(output)
-        return output
+        sig = t1.f.sigmoid_map(t1)
+        ctx.save_for_backward(sig)
+        return sig
 
     @staticmethod
     def backward(ctx: Context, grad_output: Tensor) -> Tensor:
@@ -164,7 +166,7 @@ class Log(Function):
     def backward(ctx: Context, grad_output: Tensor) -> Tensor:
         """Derivative: 1 / x"""
         (t1,) = ctx.saved_values
-        return grad_output.f.log_back_zip(grad_output, t1)
+        return grad_output.f.log_back_zip(t1, grad_output)
 
 
 class Exp(Function):
