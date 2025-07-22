@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, TypeVar, Any
 
 import numpy as np
-import numpy.typing as npt
 from numba import prange
 from numba import njit as _njit
 
@@ -183,52 +182,18 @@ def tensor_map(
         in_shape: Shape,
         in_strides: Strides,
     ) -> None:
-        same_shape = (out_shape == in_shape).all()
-        same_strides = (out_strides == in_strides).all()
-
-        # Fast path: same shape and strides
-        if same_shape and same_strides:
-            for i in prange(len(out)):
+        if out.size == in_storage.size and np.array_equal(out_strides, in_strides):
+            for i in prange((out.size)):
                 out[i] = fn(in_storage[i])
-            return
-
-        # Slower path: need to compute index and broadcast
-        out_index = np.empty(len(out_shape), dtype=np.int32)
-        in_index = np.empty(len(in_shape), dtype=np.int32)
-
-        for i in prange(len(out)):
-            # === Inline to_index(i, out_shape, out_index)
-            shape_strides = np.empty(len(out_shape), dtype=np.int32)
-            acc = 1
-            for j in range(len(out_shape) - 1, -1, -1):
-                shape_strides[j] = acc
-                acc *= out_shape[j]
-
-            for dim in range(len(out_shape)):
-                out_index[dim] = (i // shape_strides[dim]) % out_shape[dim]
-
-            # === Inline broadcast_index(out_index, out_shape, in_shape, in_index)
-            in_offset = len(in_shape) - len(out_shape)
-            for j in range(len(in_shape)):
-                if j < in_offset:
-                    in_index[j] = 0
-                else:
-                    if in_shape[j] == 1:
-                        in_index[j] = 0
-                    else:
-                        in_index[j] = out_index[j - in_offset]
-
-            # === Inline index_to_position for in_index and out_index
-            in_pos = 0
-            for j in range(len(in_shape)):
-                in_pos += in_index[j] * in_strides[j]
-
-            out_pos = 0
-            for j in range(len(out_shape)):
-                out_pos += out_index[j] * out_strides[j]
-
-            # === Apply function
-            out[out_pos] = fn(in_storage[in_pos])
+        else:
+            for i in prange(out.size):
+                out_index = np.zeros_like(out_shape)
+                in_index = np.zeros_like(in_shape)
+                to_index(i, out_shape, out_index)
+                broadcast_index(out_index, out_shape, in_shape, in_index)
+                in_position = index_to_position(in_index, in_strides)
+                out_position = index_to_position(out_index, out_strides)
+                out[out_position] = fn(in_storage[in_position])
 
     return njit(_map, parallel=True)  # type: ignore
 
@@ -257,85 +222,27 @@ def tensor_zip(
         b_shape: Shape,
         b_strides: Strides,
     ) -> None:
-        # === Inline is_contiguous for all tensors
-        def _is_contiguous(
-            shape: npt.NDArray[np.int32], strides: npt.NDArray[np.int32]
-        ) -> bool:
-            """Check whether the tensor's memory layout is contiguous.
-
-            Returns
-            -------
-            bool
-                True if memory layout is contiguous, False otherwise.
-
-            """
-            expected_stride = 1
-            for i in range(len(shape) - 1, -1, -1):
-                if shape[i] != 1 and strides[i] != expected_stride:
-                    return False
-                expected_stride *= shape[i]
-            return True
-
-        same_shape = len(out_shape) == len(a_shape) == len(b_shape)
-        if same_shape:
-            same_shape = True
-            for i in range(len(out_shape)):
-                if out_shape[i] != a_shape[i] or out_shape[i] != b_shape[i]:
-                    same_shape = False
-                    break
-
-        stride_aligned = (
-            _is_contiguous(out_shape, out_strides)
-            and _is_contiguous(a_shape, a_strides)
-            and _is_contiguous(b_shape, b_strides)
-            and same_shape
-        )
-
-        if stride_aligned:
-            for i in prange(len(out)):
+        if (
+            out.size == a_storage.size
+            and out.size == b_storage.size
+            and np.array_equal(out_strides, a_strides)
+            and np.array_equal(out_strides, b_strides)
+        ):
+            for i in prange(out.size):
                 out[i] = fn(a_storage[i], b_storage[i])
         else:
-            out_index = np.empty(len(out_shape), dtype=np.int32)
-            a_index = np.empty(len(a_shape), dtype=np.int32)
-            b_index = np.empty(len(b_shape), dtype=np.int32)
-            shape_strides = np.empty(len(out_shape), dtype=np.int32)
+            for i in prange(out.size):
+                out_index = np.zeros_like(out_shape)
+                a_index = np.zeros_like(a_shape)
+                b_index = np.zeros_like(b_shape)
+                to_index(i, out_shape, out_index)
+                broadcast_index(out_index, out_shape, a_shape, a_index)
+                broadcast_index(out_index, out_shape, b_shape, b_index)
+                a_position = index_to_position(a_index, a_strides)
+                b_position = index_to_position(b_index, b_strides)
+                out_position = index_to_position(out_index, out_strides)
 
-            acc = 1
-            for j in range(len(out_shape) - 1, -1, -1):
-                shape_strides[j] = acc
-                acc *= out_shape[j]
-
-            for i in prange(len(out)):
-                for dim in range(len(out_shape)):
-                    out_index[dim] = (i // shape_strides[dim]) % out_shape[dim]
-
-                a_offset = len(a_shape) - len(out_shape)
-                for j in range(len(a_shape)):
-                    if j < a_offset or a_shape[j] == 1:
-                        a_index[j] = 0
-                    else:
-                        a_index[j] = out_index[j - a_offset]
-
-                b_offset = len(b_shape) - len(out_shape)
-                for j in range(len(b_shape)):
-                    if j < b_offset or b_shape[j] == 1:
-                        b_index[j] = 0
-                    else:
-                        b_index[j] = out_index[j - b_offset]
-
-                a_pos = 0
-                for j in range(len(a_shape)):
-                    a_pos += a_index[j] * a_strides[j]
-
-                b_pos = 0
-                for j in range(len(b_shape)):
-                    b_pos += b_index[j] * b_strides[j]
-
-                out_pos = 0
-                for j in range(len(out_shape)):
-                    out_pos += out_index[j] * out_strides[j]
-
-                out[out_pos] = fn(a_storage[a_pos], b_storage[b_pos])
+                out[out_position] = fn(a_storage[a_position], b_storage[b_position])
 
     return njit(_zip, parallel=True)  # type: ignore
 
@@ -370,48 +277,15 @@ def tensor_reduce(
         a_strides: Strides,
         reduce_dim: int,
     ) -> None:
-        out_index = np.empty(len(out_shape), dtype=np.int32)
-        a_index = np.empty(len(a_shape), dtype=np.int32)
-        shape_strides = np.empty(len(out_shape), dtype=np.int32)
+        offset = int(a_strides[reduce_dim])
+        for pos in prange(out.size):
+            initial_index = np.zeros_like(out_shape)
+            to_index(pos, out_shape, initial_index)
+            out_pos = index_to_position(initial_index, out_strides)
+            initial_a_pos = index_to_position(initial_index, a_strides)
 
-        # Precompute shape strides for to_index
-        acc = 1
-        for j in range(len(out_shape) - 1, -1, -1):
-            shape_strides[j] = acc
-            acc *= out_shape[j]
-
-        reduce_size = a_shape[reduce_dim]
-
-        for i in prange(len(out)):
-            # === Inline to_index(i, out_shape, out_index)
-            for j in range(len(out_shape)):
-                out_index[j] = (i // shape_strides[j]) % out_shape[j]
-
-            # === Copy out_index to a_index (broadcasting not needed for reduce)
-            for j in range(len(out_shape)):
-                a_index[j] = out_index[j]
-
-            # === First element of reduction
-            a_index[reduce_dim] = 0
-            a_pos = 0
-            for j in range(len(a_shape)):
-                a_pos += a_index[j] * a_strides[j]
-            acc = a_storage[a_pos]
-
-            # === Accumulate over reduce dimension
-            for j in range(1, reduce_size):
-                a_index[reduce_dim] = j
-                a_pos = 0
-                for k in range(len(a_shape)):
-                    a_pos += a_index[k] * a_strides[k]
-                acc = fn(acc, a_storage[a_pos])
-
-            # === Compute output position
-            out_pos = 0
-            for j in range(len(out_shape)):
-                out_pos += out_index[j] * out_strides[j]
-
-            out[out_pos] = acc
+            for i in prange(a_shape[reduce_dim]):
+                out[out_pos] = fn(out[out_pos], a_storage[initial_a_pos + i * offset])
 
     return njit(_reduce, parallel=True)  # type: ignore
 
@@ -459,43 +333,32 @@ def _tensor_matrix_multiply(
         None : Fills in `out`
 
     """
-    # Ensure inner dimensions align for matrix multiplication
     assert a_shape[-1] == b_shape[-2]
 
-    # Extract dimensions
-    batch = out_shape[0]  # After reshaping, tensors are always 3D
-    out_i = out_shape[1]
-    out_j = out_shape[2]
-    inner_dim = a_shape[2]  # Shared dimension for dot product
+    offset_a = a_strides[-1]
+    offset_b = b_strides[-2]
+    reduce_dim_size = a_shape[-1]
 
-    # Parallelize over batch dimension
-    for n in prange(batch):
-        for i in range(out_i):
-            for j in range(out_j):
-                acc = 0.0
-                for k in range(inner_dim):
-                    # Handle broadcasting: if shape is 1 in batch, reuse 0-th index
-                    a_n = n if a_shape[0] > 1 else 0
-                    b_n = n if b_shape[0] > 1 else 0
+    for p in prange(out.size):
+        initial_out_index = np.zeros_like(out_shape)
+        initial_a_index = np.zeros_like(a_shape)
+        initial_b_index = np.zeros_like(b_shape)
+        to_index(p, out_shape, initial_out_index)
+        broadcast_index(initial_out_index, out_shape, a_shape, initial_a_index)
+        broadcast_index(initial_out_index, out_shape, b_shape, initial_b_index)
 
-                    # Compute flat index into a[n, i, k]
-                    a_pos = int(
-                        a_n * a_strides[0] + i * a_strides[1] + k * a_strides[2]
-                    )
+        initial_a_index[-2], initial_a_index[-1] = initial_out_index[-2], 0
+        initial_b_index[-2], initial_b_index[-1] = 0, initial_out_index[-1]
 
-                    # Compute flat index into b[n, k, j]
-                    b_pos = int(
-                        b_n * b_strides[0] + k * b_strides[1] + j * b_strides[2]
-                    )
+        out_pos = index_to_position(initial_out_index, out_strides)
+        initial_a_pos = index_to_position(initial_a_index, a_strides)
+        initial_b_pos = index_to_position(initial_b_index, b_strides)
 
-                    acc += a_storage[a_pos] * b_storage[b_pos]
-
-                # Compute flat index into out[n, i, j]
-                out_pos = int(
-                    n * out_strides[0] + i * out_strides[1] + j * out_strides[2]
-                )
-
-                out[out_pos] = acc
+        for i in prange(reduce_dim_size):
+            out[out_pos] += (
+                a_storage[initial_a_pos + i * offset_a]
+                * b_storage[initial_b_pos + i * offset_b]
+            )
 
 
 tensor_matrix_multiply = njit(_tensor_matrix_multiply, parallel=True)
