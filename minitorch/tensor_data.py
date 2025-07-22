@@ -6,6 +6,7 @@ from typing import Iterable, Optional, Sequence, Tuple, Union
 from numba import cuda
 import numpy as np
 import numpy.typing as npt
+from operator import floordiv
 from numpy import array, float64
 from typing_extensions import TypeAlias
 
@@ -65,9 +66,13 @@ def to_index(ordinal: int, shape: Shape, out_index: OutIndex) -> None:
         out_index : return index corresponding to position.
 
     """
-    for i in range(len(shape) - 1, -1, -1):
-        out_index[i] = ordinal % shape[i]
-        ordinal = ordinal // shape[i]
+    dims = shape.shape[0]
+    t = ordinal
+    for i in range(dims):
+        idx = dims - 1 - i
+        out_index[idx] = t % shape[idx]
+        # t = np.floor_divide(t, shape[idx])
+        t = floordiv(t, shape[idx])
 
 
 def broadcast_index(
@@ -91,16 +96,15 @@ def broadcast_index(
         None
 
     """
-    dim_diff = len(big_shape) - len(shape)
-    for i in range(len(shape)):
-        if shape[i] == 1:
-            out_index[i] = (
-                0  #  broadcasted dimensions (with size 1) don’t vary. The value at index 0 is repeated for all positions in that dimension.
-            )
+    l1 = big_shape.shape[0]
+    l2 = shape.shape[0]
+    diff_l = l1 - l2
+    for i in range(l2):
+        dim = min(big_shape[diff_l + i], shape[i])
+        if dim == 1:
+            out_index[i] = 0
         else:
-            out_index[i] = big_index[
-                i + dim_diff
-            ]  # The first dim_diff dimensions of big_shape are extra compared to shape => ignore that dimension for the smaller tensor by offsetting the index by dim_diff.
+            out_index[i] = big_index[diff_l + i]
 
 
 def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
@@ -120,23 +124,30 @@ def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
         IndexingError : if cannot broadcast
 
     """
-    max_len = max(len(shape1), len(shape2))
-    new_shape = []
+    # Ensure that the resulting shape does not exceed the allowed number of dimensions
+    if len(shape1) > MAX_DIMS or len(shape2) > MAX_DIMS:
+        raise IndexingError("Shape exceeds maximum dimensions allowed")
 
-    # We'll iterate from right to left
-    for i in range(max_len):
-        dim1 = shape1[-1 - i] if i < len(shape1) else 1
-        dim2 = shape2[-1 - i] if i < len(shape2) else 1
+    max_dims = min(MAX_DIMS, max(len(shape1), len(shape2)))
+    new_shape = tuple()
 
-        if dim1 == dim2 or dim1 == 1 or dim2 == 1:
-            new_dim = max(dim1, dim2)
-            new_shape.append(new_dim)
-        else:
-            raise IndexingError(f"Cannot broadcast shapes {shape1} and {shape2}")
+    for dim in range(1, max_dims + 1):
+        # Check if OOB in either shape
+        sz1 = shape1[-dim] if len(shape1) >= dim else 1
+        sz2 = shape2[-dim] if len(shape2) >= dim else 1
 
-    # Reverse the list to get correct order
-    new_shape.reverse()
-    return tuple(new_shape)
+        # Validate broadcasting rules: both dimensions should either be the same or one of them should be 1
+        if sz1 != 1 and sz2 != 1 and sz1 != sz2:
+            raise IndexingError(f"Cannot broadcast dimensions: {sz1} and {sz2}")
+
+        # Determine the new dimension size and prepend it to the new shape
+        new_shape = (max(sz1, sz2), *new_shape)
+
+    # Ensure the new shape has at most MAX_DIMS dimensions
+    if len(new_shape) > MAX_DIMS:
+        raise IndexingError("Resulting shape exceeds maximum dimensions allowed")
+
+    return new_shape
 
 
 def strides_from_shape(shape: UserShape) -> UserStrides:
@@ -267,11 +278,24 @@ class TensorData:
 
         """
         if isinstance(index, int):
-            aindex: Index = array([index])
+            aindex = array([index])
         elif isinstance(index, tuple):
             aindex = array(index)
         else:
-            raise IndexingError(f"Invalid index type: {type(index)}")
+            raise IndexingError(
+                f"Invalid index type: {type(index)}. Must be int or tuple."
+            )
+
+        if len(self.shape) == 0:
+            if aindex != 0:
+                raise IndexError("You can only index the 0th position of a scalar.")
+            else:
+                return 0
+
+        # Pretend 0-dim shape is 1-dim shape of singleton
+        shape = self.shape
+        if len(shape) == 0 and len(aindex) != 0:
+            shape = (1,)
 
         # Check for errors
         if aindex.shape[0] != len(self.shape):
@@ -282,7 +306,8 @@ class TensorData:
             if ind < 0:
                 raise IndexingError(f"Negative indexing for {aindex} not supported.")
 
-        return index_to_position(aindex, self._strides)
+        # Call fast indexing.
+        return index_to_position(array(index), self._strides)
 
     def indices(self) -> Iterable[UserIndex]:
         """Generate all indices for this tensor.
@@ -373,7 +398,9 @@ class TensorData:
         assert list(sorted(order)) == list(
             range(len(self.shape))
         ), f"Must give a position to each dimension. Shape: {self.shape} Order: {order}"
-        new_shape = tuple(self.shape[i] for i in order)
+
+        new_shape = tuple([self.shape[i] for i in order])
+
         new_strides = tuple(self.strides[i] for i in order)
 
         return TensorData(self._storage, new_shape, new_strides)
