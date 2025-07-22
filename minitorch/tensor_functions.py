@@ -249,31 +249,23 @@ class Permute(Function):
     @staticmethod
     def forward(ctx: Context, a: Tensor, order: Tensor) -> Tensor:
         """Rearranges dimensions of tensor `a` based on `order`."""
-        order_list = [int(i) for i in order._tensor._storage]
-        ctx.save_for_backward(order_list)
-
-        # Permute the tensor data
-        permuted = a._tensor.permute(*order_list)
-
-        # Reshape the flat storage into a nested list using .tolist()
-        nested_data = permuted._storage.reshape(permuted.shape).tolist()
-
-        # Use tensor() to construct the new tensor
-        return tensor(nested_data, backend=a.backend)
+        order_data = [int(order[i]) for i in range(order.size)]
+        ctx.save_for_backward(a.shape)
+        tensor_data = a._tensor.permute(*order_data)
+        return minitorch.Tensor(tensor_data, backend=a.backend)
 
     @staticmethod
     def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, float]:
         """Gradient of permute is the inverse permutation."""
-        (order,) = ctx.saved_values
-
-        # Compute inverse permutation
-        reverse_order = [0] * len(order)
-        for i, dim in enumerate(order):
-            reverse_order[dim] = i
-
-        grad_input = grad_output.permute(*reverse_order)
-
-        return grad_input, 0.0
+        (original_shape,) = ctx.saved_values
+        return (
+            minitorch.Tensor.make(
+                grad_output._tensor._storage,
+                original_shape,
+                backend=grad_output.backend,
+            ),
+            0.0,
+        )
 
 
 class View(Function):
@@ -440,7 +432,7 @@ def tensor(
 
 
 def grad_central_difference(
-    f: Any, *vals: Tensor, arg: int = 0, epsilon: float = 1e-2, ind: UserIndex
+    f: Any, *vals: Tensor, arg: int = 0, epsilon: float = 1, ind: UserIndex
 ) -> float:
     """Estimate the gradient using central difference approximation."""
     x = vals[arg]
@@ -488,8 +480,8 @@ Received (autograd) derivative: {received:.6f}
         np.testing.assert_allclose(
             actual,
             check,
-            rtol=1e-1,
-            atol=1e-1,
+            rtol=1e-2,
+            atol=1e-2,
             err_msg=err_msg.format(
                 func=f.__name__ if hasattr(f, "__name__") else str(f),
                 arg_index=i,
