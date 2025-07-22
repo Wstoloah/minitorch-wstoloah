@@ -74,19 +74,22 @@ def topological_sort(variable: Variable) -> Iterable[Variable]:
         Non-constant Variables in topological order starting from the right.
 
     """
+    queue = [variable]
+    sorted_vars = []
     visited = set()
-    order = []
 
-    def dfs(var: Variable) -> None:
-        if var.unique_id in visited or var.is_constant():
-            return
-        visited.add(var.unique_id)
-        for parent in var.parents:
-            dfs(parent)
-        order.append(var)
+    while queue:
+        var = queue[0]
+        queue.pop(0)
+        if var.unique_id not in visited:
+            if var.is_constant():
+                continue
+            visited.add(var.unique_id)
+            sorted_vars.append(var)
+            for parent in var.parents:
+                queue.append(parent)
 
-    dfs(variable)
-    return reversed(order)
+    return sorted_vars
 
 
 def backpropagate(variable: Variable, deriv: Any) -> None:
@@ -98,21 +101,20 @@ def backpropagate(variable: Variable, deriv: Any) -> None:
         deriv (Any): The initial derivative to propagate backward.
 
     """
-    # Get topological order of non-constant variables
-    topo_order = list(topological_sort(variable))
+    vars = list(topological_sort(variable))
+    tracked_deriv = {variable.unique_id: deriv}
 
-    # Dictionary to hold the gradients of each variable
-    derivatives = {var.unique_id: 0 for var in topo_order}
-    derivatives[variable.unique_id] = deriv
-
-    for var in topo_order:
-        d_output = derivatives[var.unique_id]
+    while vars:
+        var = vars[0]
+        vars.pop(0)
+        current_deriv = tracked_deriv[var.unique_id]
         if var.is_leaf():
-            var.accumulate_derivative(d_output)
+            var.accumulate_derivative(current_deriv)
         else:
-            for parent, d_input in var.chain_rule(d_output):
-                if parent.unique_id in derivatives:
-                    derivatives[parent.unique_id] += d_input
+            for input_var, deriv_out in var.chain_rule(current_deriv):
+                tracked_deriv[input_var.unique_id] = (
+                    tracked_deriv.get(input_var.unique_id, 0.0) + deriv_out
+                )
 
 
 @dataclass
