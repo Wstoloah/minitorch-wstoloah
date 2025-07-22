@@ -16,7 +16,7 @@ def default_log_fn(epoch, total_loss, correct, losses):
 
 
 def RParam(*shape, backend):
-    r = minitorch.rand(shape, backend=backend) - 0.5
+    r = 2 * (minitorch.rand(shape, backend=backend) - 0.5)
     return minitorch.Parameter(r)
 
 
@@ -46,7 +46,11 @@ class Linear(minitorch.Module):
 
     def forward(self, x):
         batch, in_size = x.shape
-        return x.view(batch, in_size) @ self.weights.value + self.bias.value
+        # return x.view(batch, in_size) @ self.weights.value + self.bias.value
+        return (
+            self.weights.value.view(1, in_size, self.out_size)
+            * x.view(batch, in_size, 1)
+        ).sum(1).view(batch, self.out_size) + self.bias.value.view(self.out_size)
 
 
 class FastTrain:
@@ -81,9 +85,7 @@ class FastTrain:
 
                 out = self.model.forward(X).view(y.shape[0])
                 prob = (out * y) + (out - 1.0) * (y - 1.0)
-                print("prob before log:", prob)
-                epsilon = 1e-8
-                loss = -(prob + epsilon).log()
+                loss = -prob.log()
                 (loss / y.shape[0]).sum().view(1).backward()
 
                 total_loss = loss.sum().view(1)[0]
