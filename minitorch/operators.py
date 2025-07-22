@@ -2,7 +2,7 @@
 
 # ## Task 0.1
 from typing import Callable, Iterable, Any
-import numpy as np
+import math
 
 #
 # Implementation of a prelude of elementary functions.
@@ -80,50 +80,51 @@ def is_close(num1: float, num2: float, tol: float = 1e-2) -> bool:
 
 def sigmoid(num: float) -> float:
     """Sigmoid function."""
-    if num >= 0:
-        return 1 / (1 + np.exp(-num))
-    return np.exp(num) / (1 + np.exp(num))
+    if num >= 0.0:
+        return 1.0 / (1.0 + math.exp(-num))
+    return math.exp(num) / (1.0 + math.exp(num))
 
 
 def relu(num: float) -> float:
     """ReLU function."""
-    if 0 < num:
+    if 0.0 < num:
         return num
-    return 0
+    return 0.0
+
+
+EPS = 1e-6
 
 
 def log(num: float) -> float:
     """Logarithm (base 10) of a number."""
-    if num <= 0:
-        raise ValueError("Logarithm undefined for non-positive numbers.")
-    return np.log10(num)
+    return math.log(num + EPS)
 
 
 def exp(num: float) -> float:
     """Exponential function."""
-    return np.exp(num)
+    return math.exp(num)
 
 
 def inv(num: float) -> float:
     """Reciprocal (1/num)."""
-    if num == 0:
+    if num == 0.0:
         raise ZeroDivisionError("Cannot compute reciprocal of zero.")
-    return 1 / num
+    return 1.0 / num
 
 
 def log_back(num: float, d: float) -> float:
     """Derivative of the log function times a second argument."""
-    return (1 / num) * d if num > 0 else 0
+    return (1.0 / num) * d
 
 
 def inv_back(num: float, d: float) -> float:
     """Derivative of reciprocal times a second argument."""
-    return (-1 / (num**2)) * d if num != 0 else 0
+    return (-1.0 / (num**2)) * d
 
 
 def relu_back(num: float, d: float) -> float:
     """Derivative of ReLU times a second argument."""
-    return d if num > 0 else 0
+    return d * (1.0 if num > 0 else 0.0)
 
 
 # ## Task 0.3
