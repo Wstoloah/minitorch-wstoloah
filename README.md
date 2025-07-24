@@ -132,3 +132,11 @@ python project/run_mnist_multiclass.py
 ## 📜 License
 
 This work is based on the educational MiniTorch framework. My implementations are released under the MIT License.
+
+## 👤 Author
+
+| Name        | GitHub                                  | Email                  |
+|-------------|------------------------------------------|------------------------|
+| **Ouissal BOUTOUATOU** | [@wstoloah](https://github.com/Wstoloah) | ouissalboutouatou@gmail.com  |
+
+> _Don't hesitate to reach out if you have questions, feedback, or want to collaborate on deep learning or educational ML tools._
