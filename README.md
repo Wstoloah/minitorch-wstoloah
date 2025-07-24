@@ -104,7 +104,7 @@ This parallel implementation gave a 10x speedup. On a standard Colab GPU setup, 
 
 ## 📸 Visual Results
 
-> Add Streamlit screenshots, training visualizations, or decision boundaries here.
+> To be added
 
 ---
 
