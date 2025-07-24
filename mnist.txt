@@ -1,0 +1,259 @@
+# MNIST Classification Training Log
+Train size: 5000
+Validation size: 500
+Learning rate: 0.01
+Batch size: 16
+Max epochs: 2
+----------------------------------------
+Epoch 1, Loss: 2.3099, Validation Accuracy: 6.25%
+Best Validation Accuracy: 6.25%
+Epoch 1, Loss: 11.4877, Validation Accuracy: 0.00%
+Best Validation Accuracy: 6.25%
+Epoch 1, Loss: 11.4871, Validation Accuracy: 0.00%
+Best Validation Accuracy: 6.25%
+Epoch 1, Loss: 11.4622, Validation Accuracy: 6.25%
+Best Validation Accuracy: 6.25%
+Epoch 1, Loss: 11.4461, Validation Accuracy: 6.25%
+Best Validation Accuracy: 6.25%
+Epoch 1, Loss: 11.4533, Validation Accuracy: 6.25%
+Best Validation Accuracy: 6.25%
+Epoch 1, Loss: 11.3795, Validation Accuracy: 12.50%
+Best Validation Accuracy: 12.50%
+Epoch 1, Loss: 11.3632, Validation Accuracy: 18.75%
+Best Validation Accuracy: 18.75%
+Epoch 1, Loss: 11.2303, Validation Accuracy: 18.75%
+Best Validation Accuracy: 18.75%
+Epoch 1, Loss: 10.8216, Validation Accuracy: 31.25%
+Best Validation Accuracy: 31.25%
+Epoch 1, Loss: 10.6659, Validation Accuracy: 25.00%
+Best Validation Accuracy: 31.25%
+Epoch 1, Loss: 9.9139, Validation Accuracy: 37.50%
+Best Validation Accuracy: 37.50%
+Epoch 1, Loss: 8.7760, Validation Accuracy: 50.00%
+Best Validation Accuracy: 50.00%
+Epoch 1, Loss: 8.4121, Validation Accuracy: 62.50%
+Best Validation Accuracy: 62.50%
+Epoch 1, Loss: 8.4664, Validation Accuracy: 62.50%
+Best Validation Accuracy: 62.50%
+Epoch 1, Loss: 6.5688, Validation Accuracy: 62.50%
+Best Validation Accuracy: 62.50%
+Epoch 1, Loss: 8.3089, Validation Accuracy: 81.25%
+Best Validation Accuracy: 81.25%
+Epoch 1, Loss: 6.6140, Validation Accuracy: 68.75%
+Best Validation Accuracy: 81.25%
+Epoch 1, Loss: 5.9088, Validation Accuracy: 87.50%
+Best Validation Accuracy: 87.50%
+Epoch 1, Loss: 6.0455, Validation Accuracy: 81.25%
+Best Validation Accuracy: 87.50%
+Epoch 1, Loss: 5.5459, Validation Accuracy: 87.50%
+Best Validation Accuracy: 87.50%
+Epoch 1, Loss: 5.0758, Validation Accuracy: 81.25%
+Best Validation Accuracy: 87.50%
+Epoch 1, Loss: 4.0544, Validation Accuracy: 81.25%
+Best Validation Accuracy: 87.50%
+Epoch 1, Loss: 4.5754, Validation Accuracy: 81.25%
+Best Validation Accuracy: 87.50%
+Epoch 1, Loss: 5.0044, Validation Accuracy: 81.25%
+Best Validation Accuracy: 87.50%
+Epoch 1, Loss: 4.8805, Validation Accuracy: 75.00%
+Best Validation Accuracy: 87.50%
+Epoch 1, Loss: 5.4542, Validation Accuracy: 93.75%
+Best Validation Accuracy: 93.75%
+Epoch 1, Loss: 4.4469, Validation Accuracy: 93.75%
+Best Validation Accuracy: 93.75%
+Epoch 1, Loss: 4.1025, Validation Accuracy: 93.75%
+Best Validation Accuracy: 93.75%
+Epoch 1, Loss: 3.6977, Validation Accuracy: 87.50%
+Best Validation Accuracy: 93.75%
+Epoch 1, Loss: 4.6405, Validation Accuracy: 81.25%
+Best Validation Accuracy: 93.75%
+Epoch 1, Loss: 4.0276, Validation Accuracy: 81.25%
+Best Validation Accuracy: 93.75%
+Epoch 1, Loss: 3.0866, Validation Accuracy: 81.25%
+Best Validation Accuracy: 93.75%
+Epoch 1, Loss: 3.9521, Validation Accuracy: 81.25%
+Best Validation Accuracy: 93.75%
+Epoch 1, Loss: 6.1812, Validation Accuracy: 87.50%
+Best Validation Accuracy: 93.75%
+Epoch 1, Loss: 4.2281, Validation Accuracy: 75.00%
+Best Validation Accuracy: 93.75%
+Epoch 1, Loss: 3.6129, Validation Accuracy: 87.50%
+Best Validation Accuracy: 93.75%
+Epoch 1, Loss: 3.6888, Validation Accuracy: 87.50%
+Best Validation Accuracy: 93.75%
+Epoch 1, Loss: 4.3061, Validation Accuracy: 87.50%
+Best Validation Accuracy: 93.75%
+Epoch 1, Loss: 3.4029, Validation Accuracy: 87.50%
+Best Validation Accuracy: 93.75%
+Epoch 1, Loss: 3.4463, Validation Accuracy: 87.50%
+Best Validation Accuracy: 93.75%
+Epoch 1, Loss: 3.4600, Validation Accuracy: 87.50%
+Best Validation Accuracy: 93.75%
+Epoch 1, Loss: 3.3323, Validation Accuracy: 87.50%
+Best Validation Accuracy: 93.75%
+Epoch 1, Loss: 3.1667, Validation Accuracy: 93.75%
+Best Validation Accuracy: 93.75%
+Epoch 1, Loss: 4.4509, Validation Accuracy: 100.00%
+Best Validation Accuracy: 100.00%
+Epoch 1, Loss: 2.7191, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 1, Loss: 3.7887, Validation Accuracy: 81.25%
+Best Validation Accuracy: 100.00%
+Epoch 1, Loss: 3.9952, Validation Accuracy: 100.00%
+Best Validation Accuracy: 100.00%
+Epoch 1, Loss: 4.0083, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 1, Loss: 3.1147, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 1, Loss: 3.0734, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 1, Loss: 3.1521, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 1, Loss: 3.6944, Validation Accuracy: 87.50%
+Best Validation Accuracy: 100.00%
+Epoch 1, Loss: 3.1091, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 1, Loss: 3.9848, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 1, Loss: 2.6878, Validation Accuracy: 87.50%
+Best Validation Accuracy: 100.00%
+Epoch 1, Loss: 2.7456, Validation Accuracy: 87.50%
+Best Validation Accuracy: 100.00%
+Epoch 1, Loss: 2.2806, Validation Accuracy: 87.50%
+Best Validation Accuracy: 100.00%
+Epoch 1, Loss: 2.9614, Validation Accuracy: 87.50%
+Best Validation Accuracy: 100.00%
+Epoch 1, Loss: 3.2345, Validation Accuracy: 81.25%
+Best Validation Accuracy: 100.00%
+Epoch 1, Loss: 3.1651, Validation Accuracy: 81.25%
+Best Validation Accuracy: 100.00%
+Epoch 1, Loss: 4.0325, Validation Accuracy: 87.50%
+Best Validation Accuracy: 100.00%
+Epoch 1, Loss: 3.8915, Validation Accuracy: 87.50%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 0.5451, Validation Accuracy: 87.50%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 3.0615, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 3.4309, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.7127, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.5439, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 1.7006, Validation Accuracy: 100.00%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.5062, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 3.0935, Validation Accuracy: 87.50%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 3.6385, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.5493, Validation Accuracy: 100.00%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.8335, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 3.6718, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 3.6283, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 3.3385, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 4.4414, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.3255, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 3.8291, Validation Accuracy: 81.25%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 3.5301, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 3.2755, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.3668, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 3.0362, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.4732, Validation Accuracy: 87.50%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.5615, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 3.0144, Validation Accuracy: 87.50%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.0874, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 1.9550, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.8925, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.5824, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.2057, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 1.8056, Validation Accuracy: 87.50%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.4490, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 1.6621, Validation Accuracy: 81.25%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 1.0988, Validation Accuracy: 87.50%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 1.7084, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 3.5881, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 3.0555, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.2879, Validation Accuracy: 87.50%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.3865, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 3.0095, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.1995, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.1282, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.2448, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.0865, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.0124, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 3.1783, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 1.6867, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.4457, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.9050, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.6357, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 1.7415, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.2242, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.4881, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.4085, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 1.6928, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.0729, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 1.7878, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.1017, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.2112, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.1805, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 1.6934, Validation Accuracy: 93.75%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.3229, Validation Accuracy: 81.25%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.5473, Validation Accuracy: 81.25%
+Best Validation Accuracy: 100.00%
+Epoch 2, Loss: 2.8074, Validation Accuracy: 87.50%
+Best Validation Accuracy: 100.00%

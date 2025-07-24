@@ -73,15 +73,10 @@ class Network(minitorch.Module):
 
     def forward(self, x):
         self.mid = self.conv1.forward(x).relu()
-        # print(self.mid.shape)
         self.out = self.conv2.forward(self.mid).relu()
-        # print(self.out.shape)
         pool = minitorch.avgpool2d(self.out, (4, 4))
-        # print(pool.shape)
         pool = pool.view(BATCH, 392)
-        # print(pool.shape)
         h = self.layer1.forward(pool).relu()
-        # print(h.shape)
         if self.training:
             h = minitorch.dropout(h, 0.25)
         return minitorch.logsoftmax(self.layer2.forward(h), dim=1)
@@ -99,8 +94,46 @@ def make_mnist(start, stop):
     return X, ys
 
 
+best_val = 0.0
+
+
 def default_log_fn(epoch, total_loss, correct, total, losses, model):
     print(f"Epoch {epoch} loss {total_loss} valid acc {correct}/{total}")
+
+
+def file_log_fn_factory(
+    log_path="mnist.txt",
+    train_size=None,
+    val_size=None,
+    learning_rate=None,
+    batch_size=None,
+    max_epochs=None,
+):
+    log_file = open(log_path, "w")
+
+    # Write training configuration
+    log_file.write("# MNIST Classification Training Log\n")
+    log_file.write(f"Train size: {train_size}\n")
+    log_file.write(f"Validation size: {val_size}\n")
+    log_file.write(f"Learning rate: {learning_rate}\n")
+    log_file.write(f"Batch size: {batch_size}\n")
+    log_file.write(f"Max epochs: {max_epochs}\n")
+    log_file.write("-" * 40 + "\n")
+
+    def log_fn(epoch, total_loss, correct, total, losses, model):
+        global best_val
+        best_val = max(best_val, correct / total)
+        msg = (
+            f"Epoch {epoch}, Loss: {total_loss:.4f}, "
+            f"Validation Accuracy: {correct/total:.2%}\n"
+            f"Best Validation Accuracy: {best_val:.2%}\n"
+        )
+
+        print(msg.strip())
+        log_file.write(msg)
+        log_file.flush()
+
+    return log_fn
 
 
 class ImageTrain:
@@ -182,5 +215,30 @@ class ImageTrain:
 
 
 if __name__ == "__main__":
-    data_train, data_val = (make_mnist(0, 5000), make_mnist(10000, 10500))
-    ImageTrain().train(data_train, data_val, learning_rate=0.01, max_epochs=50)
+    train_size = 5000
+    val_size = 500
+    learning_rate = 0.01
+    max_epochs = 2
+    batch_size = BATCH  # 16
+
+    data_train, data_val = (
+        make_mnist(0, train_size),
+        make_mnist(10000, 10000 + val_size),
+    )
+
+    log_fn = file_log_fn_factory(
+        log_path="mnist.txt",
+        train_size=train_size,
+        val_size=val_size,
+        learning_rate=learning_rate,
+        batch_size=batch_size,
+        max_epochs=max_epochs,
+    )
+
+    ImageTrain().train(
+        data_train,
+        data_val,
+        learning_rate=learning_rate,
+        max_epochs=max_epochs,
+        log_fn=log_fn,
+    )
